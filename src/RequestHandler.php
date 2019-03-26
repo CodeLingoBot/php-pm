@@ -170,21 +170,7 @@ class RequestHandler
         }
     }
 
-    private function createErrorResponse($code, $text)
-    {
-        return sprintf(
-            'HTTP/1.1 %s'."\n".
-            'Date: %s'."\n".
-            'Content-Type: text/plain'."\n".
-            'Content-Length: %s'."\n".
-            "\n".
-            '%s',
-            $code,
-            gmdate('D, d M Y H:i:s T'),
-            strlen($text),
-            $text
-        );
-    }
+    
 
     /**
      * Slave available handler

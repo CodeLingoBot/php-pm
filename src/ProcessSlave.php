@@ -297,50 +297,13 @@ class ProcessSlave
      *
      * @throws \RuntimeException
      */
-    private function doConnect()
-    {
-        $connector = new UnixConnector($this->loop);
-        $unixSocket = $this->getControllerSocketPath(false);
-
-        $connector->connect($unixSocket)->done(
-            function ($controller) {
-                $this->controller = $controller;
-
-                $this->loop->addSignal(SIGTERM, [$this, 'shutdown']);
-                $this->loop->addSignal(SIGINT, [$this, 'shutdown']);
-                register_shutdown_function([$this, 'prepareShutdown']);
-
-                $this->bindProcessMessage($this->controller);
-                $this->controller->on('close', [$this, 'shutdown']);
-
-                // port is the slave identifier
-                $port = $this->config['port'];
-                $socketPath = $this->getSlaveSocketPath($port, true);
-                $this->server = new UnixServer($socketPath, $this->loop);
-
-                $httpServer = new HttpServer([$this, 'onRequest']);
-                $httpServer->listen($this->server);
-
-                $this->sendMessage($this->controller, 'register', ['pid' => getmypid(), 'port' => $port]);
-            }
-        );
-    }
+    
 
     /**
      * Attempt a connection through the unix socket until it succeeds.
      * This is a workaround for an issue where the (hardcoded) 1s socket timeout is triggered due to a busy socket.
      */
-    private function tryConnect()
-    {
-        try {
-            $this->doConnect();
-        } catch (\RuntimeException $ex) {
-            // Failed to connect to the controller, there was probably a timeout accessing the socket...
-            $this->loop->addTimer(1, function () {
-                $this->tryConnect();
-            });
-        }
-    }
+    
 
     /**
      * Connects to ProcessManager, master process.

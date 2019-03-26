@@ -286,26 +286,7 @@ class ProcessManager
     /**
      * To be called after all workers have been terminated and the event loop is no longer in use.
      */
-    private function quit()
-    {
-        $this->output->writeln('Stopping the process manager.');
-
-        // this method is also called during startup when something crashed, so
-        // make sure we don't operate on nulls.
-        if ($this->controller) {
-            @$this->controller->close();
-        }
-        if ($this->web) {
-            @$this->web->close();
-        }
-
-        if ($this->loop) {
-            $this->loop->stop();
-        }
-
-        unlink($this->pidfile);
-        exit;
-    }
+    
 
     /**
      * @param bool $populateServer
@@ -1253,25 +1234,5 @@ EOF;
     /**
      * @param Slave $slave
      */
-    private function terminateSlave($slave)
-    {
-        // set closed and remove from pool
-        $slave->close();
-
-        try {
-            $this->slaves->remove($slave);
-        } catch (\Exception $ignored) {
-        }
-
-        /** @var Process */
-        $process = $slave->getProcess();
-        if ($process->isRunning()) {
-            $process->terminate();
-        }
-
-        $pid = $slave->getPid();
-        if (is_int($pid)) {
-            posix_kill($pid, SIGKILL); // make sure it's really dead
-        }
-    }
+    
 }
